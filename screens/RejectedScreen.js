@@ -147,6 +147,22 @@ const parseRemarks = (remarkData) => {
   return [];
 };
 
+
+
+const getStageDisplayName = (stage) => {
+  if (!stage) return "";
+
+  const s = stage.toLowerCase().trim();
+
+  if (s.includes("manager"))
+    return "Reporting Manager";
+
+  if (s.includes("beteam"))
+    return "BE Team";
+
+  return stage;
+};
+
 const RejectedByMeScreen = () => {
   const [searchText, setSearchText] = useState('');
   const [showFilters, setShowFilters] = useState(false);
@@ -943,7 +959,8 @@ const RejectedByMeScreen = () => {
                     return remarks.map((remark, index) => (
                       <RemarksCard
                         key={index}
-                        title={remark.approverName || remark.title || "Unknown"}
+                        //title={remark.approvalstage || remark.title || "Unknown"}
+                        title={getStageDisplayName(remark.approvalstage) || remark.title || "Unknown"}
                         comment={remark.comments || remark.comment || "No comment"}
                         date={remark.approvalDate || remark.date ? formatDateTime(remark.approvalDate || remark.date) : ""}
                       />

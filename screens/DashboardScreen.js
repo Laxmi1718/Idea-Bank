@@ -42,6 +42,7 @@
 
 //   return `${baseUrl}/${cleanPath}`;
 // };
+
 // const getAlternateImageUrl = (url) => {
 //   if (!url) return null;
 //   return url.replace('ideabank-api.abisaio.com', 'ideabank.abisaio.com');
@@ -71,6 +72,27 @@
 // const isSmallDevice = width < 360;
 // const isVeryNarrow = width < 330;
 
+// const getTimelineWithCancelledStatus = (timeline, ideaStatus) => {
+//   if (!timeline || !Array.isArray(timeline)) return [];
+  
+//   const status = (ideaStatus || '').toLowerCase();
+//   const hasCancelled = timeline.some(item => 
+//     (item.status || '').toLowerCase().includes('cancel')
+//   );
+  
+//   if ((status === 'cancelled' || status === 'canceled') && !hasCancelled) {
+//     return [
+//       ...timeline,
+//       {
+//         status: 'Cancelled',
+//         date: new Date().toISOString(),
+//         description: 'Idea cancelled by user'
+//       }
+//     ];
+//   }
+  
+//   return timeline;
+// };
 
 // function SimpleBarChart({ data }) {
 //   const maxValue = Math.max(...data.map(d => d.count), 1);
@@ -865,6 +887,7 @@
 //     if (s === "approved" || s === "closed") return "#00ACC1";
 //     if (s === "rejected") return "red";
 //     if (s === "hold" || s === "on hold") return "#191970";
+//     if (s === "cancelled" || s === "canceled") return "#9E9E9E";
 //     return "gray";
 //   };
 
@@ -984,6 +1007,7 @@
 //       if (s.includes('implementation')) return "#3F51B5";
 //       if (s.includes('rejected')) return "#F44336";
 //       if (s.includes('closed')) return "#FF3B30";
+//       if (s.includes('cancel')) return "#9E9E9E";
 //       return "#9E9E9E";
 //     };
 
@@ -1528,23 +1552,30 @@
 //           <ScrollView contentContainerStyle={styles.modalScrollContent}>
 //             <View style={styles.timelineCardContainer}>
 //               <View style={styles.timelineContainer}>
-//                 {ideaDetail?.timeline && Array.isArray(ideaDetail.timeline) && ideaDetail.timeline.length > 0 ? (
-//                   ideaDetail.timeline.map((item, idx) => (
-//                     <TimelineItem
-//                       key={idx}
-//                       status={safeRenderValue(item.status || item.approvalStage || item.approvalstage || "N/A")}
-//                       date={item.date || item.approvalDate}
-//                       description={safeRenderValue(item.description || item.comments)}
-//                       isLast={idx === ideaDetail.timeline.length - 1}
-//                       isFirst={idx === 0}
-//                     />
-//                   ))
-//                 ) : (
-//                   <View style={styles.noTimelineContainer}>
-//                     <Ionicons name="time-outline" size={48} color="#ccc" />
-//                     <Text style={styles.noTimelineText}>No timeline data available</Text>
-//                   </View>
-//                 )}
+//                 {(() => {
+//                   const timelineData = getTimelineWithCancelledStatus(
+//                     ideaDetail?.timeline,
+//                     ideaDetail?.ideaStatus || ideaDetail?.status
+//                   );
+                  
+//                   return timelineData && Array.isArray(timelineData) && timelineData.length > 0 ? (
+//                     timelineData.map((item, idx) => (
+//                       <TimelineItem
+//                         key={idx}
+//                         status={safeRenderValue(item.status || item.approvalStage || item.approvalstage || "N/A")}
+//                         date={item.date || item.approvalDate}
+//                         description={safeRenderValue(item.description || item.comments)}
+//                         isLast={idx === timelineData.length - 1}
+//                         isFirst={idx === 0}
+//                       />
+//                     ))
+//                   ) : (
+//                     <View style={styles.noTimelineContainer}>
+//                       <Ionicons name="time-outline" size={48} color="#ccc" />
+//                       <Text style={styles.noTimelineText}>No timeline data available</Text>
+//                     </View>
+//                   );
+//                 })()}
 //               </View>
 //             </View>
 //           </ScrollView>
@@ -2261,7 +2292,7 @@
 
 
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, StatusBar, Dimensions, Modal, FlatList, ActivityIndicator, Linking, Alert, Animated } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, StatusBar, Dimensions, Modal, FlatList, ActivityIndicator, Linking, Alert, Animated, useWindowDimensions } from 'react-native';
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
@@ -2334,26 +2365,45 @@ const { width } = Dimensions.get('window');
 const isSmallDevice = width < 360;
 const isVeryNarrow = width < 330;
 
+
 const getTimelineWithCancelledStatus = (timeline, ideaStatus) => {
   if (!timeline || !Array.isArray(timeline)) return [];
-  
+
   const status = (ideaStatus || '').toLowerCase();
-  const hasCancelled = timeline.some(item => 
-    (item.status || '').toLowerCase().includes('cancel')
-  );
+  const isCancelled = status === 'cancelled' || status === 'canceled';
+
+  if (!isCancelled) {
   
-  if ((status === 'cancelled' || status === 'canceled') && !hasCancelled) {
-    return [
-      ...timeline,
-      {
-        status: 'Cancelled',
-        date: new Date().toISOString(),
-        description: 'Idea cancelled by user'
-      }
-    ];
+    return timeline;
   }
-  
-  return timeline;
+
+  const hasCancelledEntry = timeline.some(
+    item => (item.status || '').toLowerCase().includes('cancel')
+  );
+
+  const createdEntry = timeline.find(
+    item => (item.status || '').toLowerCase().includes('creat')
+  );
+
+ 
+  const filteredTimeline = timeline.filter(
+    item => !(item.status || '').toLowerCase().includes('pending')
+  );
+
+  if (hasCancelledEntry) {
+   
+    return filteredTimeline;
+  }
+
+
+  return [
+    ...(createdEntry ? [createdEntry] : filteredTimeline),
+    {
+      status: 'Cancelled',
+      date: new Date().toISOString(),
+      description: 'Idea cancelled by user',
+    },
+  ];
 };
 
 function SimpleBarChart({ data }) {
@@ -3172,23 +3222,43 @@ const DashboardScreen = () => {
     return [];
   };
 
-  const getCardWrapperStyle = () => {
-    if (width < 360) {
-      return { width: '48%' };
-    }
-    if (width < 720) {
-      return { width: '48%' };
-    }
-    return { width: `${100 / 5 - 0.5}%` };
+  const getStageDisplayName = (stage) => {
+    if (!stage) return "";
+  
+    const s = stage.toLowerCase().trim();
+  
+    if (s.includes("manager"))
+      return "Reporting Manager";
+  
+    if (s.includes("beteam"))
+      return "BE Team";
+  
+    return stage;
   };
 
-  const DashboardCard = ({ title, icon, count, color, iconColor }) => (
-    <View style={[styles.card, { backgroundColor: color }]}>
-      <Ionicons name={icon} size={28} color={iconColor} />
-      <Text style={styles.cardTitle}>{title}</Text>
-      <Text style={styles.cardCount}>{count}</Text>
-    </View>
-  );
+  const { width: screenW } = useWindowDimensions();
+  const isTablet = screenW >= 600;
+
+  const getCardWrapperStyle = () => {
+    if (isTablet) {
+    
+      return { width: `${100 / 5 - 1}%` };
+    }
+    
+    return { width: '48%' };
+  };
+
+  const DashboardCard = ({ title, icon, count, color, iconColor }) => {
+    const { width: w } = useWindowDimensions();
+    const tablet = w >= 600;
+    return (
+      <View style={[styles.card, { backgroundColor: color }]}>
+        <Ionicons name={icon} size={tablet ? 32 : 28} color={iconColor} />
+        <Text style={[styles.cardTitle, tablet && { fontSize: 13 }]}>{title}</Text>
+        <Text style={[styles.cardCount, tablet && { fontSize: 20 }]}>{count}</Text>
+      </View>
+    );
+  };
 
   const NotificationItem = ({ item }) => {
     const handleNotificationClick = async () => {
@@ -3365,29 +3435,43 @@ const DashboardScreen = () => {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.cardsContainer}>
-          <View style={styles.row}>
-            <View style={[styles.cardWrapper, getCardWrapperStyle()]}>
-              <DashboardCard {...cardData[0]} />
+          {isTablet ? (
+          
+            <View style={styles.tabletRow}>
+              {cardData.map((card, index) => (
+                <View key={index} style={[styles.cardWrapper, getCardWrapperStyle()]}>
+                  <DashboardCard {...card} />
+                </View>
+              ))}
             </View>
-            <View style={[styles.cardWrapper, getCardWrapperStyle()]}>
-              <DashboardCard {...cardData[1]} />
-            </View>
-          </View>
+          ) : (
+           
+            <>
+              <View style={styles.row}>
+                <View style={[styles.cardWrapper, getCardWrapperStyle()]}>
+                  <DashboardCard {...cardData[0]} />
+                </View>
+                <View style={[styles.cardWrapper, getCardWrapperStyle()]}>
+                  <DashboardCard {...cardData[1]} />
+                </View>
+              </View>
 
-          <View style={styles.row}>
-            <View style={[styles.cardWrapper, getCardWrapperStyle()]}>
-              <DashboardCard {...cardData[2]} />
-            </View>
-            <View style={[styles.cardWrapper, getCardWrapperStyle()]}>
-              <DashboardCard {...cardData[3]} />
-            </View>
-          </View>
+              <View style={styles.row}>
+                <View style={[styles.cardWrapper, getCardWrapperStyle()]}>
+                  <DashboardCard {...cardData[2]} />
+                </View>
+                <View style={[styles.cardWrapper, getCardWrapperStyle()]}>
+                  <DashboardCard {...cardData[3]} />
+                </View>
+              </View>
 
-          <View style={styles.rejectedRow}>
-            <View style={[styles.rejectedWrapper, getCardWrapperStyle()]}>
-              <DashboardCard {...cardData[4]} />
-            </View>
-          </View>
+              <View style={styles.rejectedRow}>
+                <View style={[styles.rejectedWrapper, getCardWrapperStyle()]}>
+                  <DashboardCard {...cardData[4]} />
+                </View>
+              </View>
+            </>
+          )}
         </View>
 
         {shouldShowGraph() ? (
@@ -3789,7 +3873,8 @@ const DashboardScreen = () => {
                     return remarks.map((remark, index) => (
                       <RemarksCard
                         key={index}
-                        title={remark.approverName || remark.title || "Unknown"}
+                        //title={remark.approvalstage || remark.title || "Unknown"}
+                        title={getStageDisplayName(remark.approvalstage) || remark.title || "Unknown"}
                         comment={remark.comments || remark.comment || "No comment"}
                         date={remark.approvalDate || remark.date ? formatDateTime(remark.approvalDate || remark.date) : ""}
                       />
@@ -3819,7 +3904,7 @@ const DashboardScreen = () => {
                     ideaDetail?.timeline,
                     ideaDetail?.ideaStatus || ideaDetail?.status
                   );
-                  
+
                   return timelineData && Array.isArray(timelineData) && timelineData.length > 0 ? (
                     timelineData.map((item, idx) => (
                       <TimelineItem
@@ -3953,6 +4038,7 @@ const styles = StyleSheet.create({
   },
 
   cardsContainer: { paddingHorizontal: 12, marginTop: 28 },
+  tabletRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 },
   row: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 },
   rejectedRow: { flexDirection: 'row', justifyContent: 'center', marginBottom: 10 },
   cardWrapper: { width: '48%' },

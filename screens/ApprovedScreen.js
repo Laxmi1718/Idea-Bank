@@ -76,7 +76,6 @@ const formatDateTime = (dateString) => {
   return `${day} ${month} ${year}, ${hours}:${minutes}`;
 };
 
-// Confetti Component
 function ConfettiPiece({ delay, duration, color }) {
   const translateY = useRef(new Animated.Value(-50)).current;
   const translateX = useRef(new Animated.Value(Math.random() * 400 - 200)).current;
@@ -134,7 +133,6 @@ function ConfettiEffect() {
   );
 }
 
-// Image Component with Fallback
 function ImageWithFallback({ uri, style, onPress }) {
   const [imageUri, setImageUri] = useState(uri);
   const [hasError, setHasError] = useState(false);
@@ -273,7 +271,7 @@ const ApprovedScreen = () => {
   const [imageRetryUrl, setImageRetryUrl] = useState(null);
   const [imageLoadError, setImageLoadError] = useState({});
 
-  // New state for closed popup
+
   const [showClosedPopup, setShowClosedPopup] = useState(false);
 
   const fetchApprovedIdeas = async () => {
@@ -420,7 +418,7 @@ const ApprovedScreen = () => {
           setShowImplementationDetails(true);
         }
 
-        // Check if status is closed and show popup
+
         const status = (detail.ideaStatus || detail.status || '').toLowerCase();
         if (status === 'closed') {
           setShowClosedPopup(true);
@@ -504,6 +502,21 @@ const ApprovedScreen = () => {
     return [];
   };
 
+
+  const getStageDisplayName = (stage) => {
+    if (!stage) return "";
+
+    const s = stage.toLowerCase().trim();
+
+    if (s.includes("manager"))
+      return "Reporting Manager";
+
+    if (s.includes("beteam"))
+      return "BE Team";
+
+    return stage;
+  };
+
   const openImagePreview = (imageUrl) => {
     const finalUrl = normalizeImagePath(imageUrl);
 
@@ -551,7 +564,6 @@ const ApprovedScreen = () => {
   };
 
   const renderIdeaCard = ({ item }) => {
-    // Get the correct ID - try multiple possible fields
     const ideaId = item.ideaId || item.id || item.ideaNumber;
 
     return (
@@ -691,10 +703,10 @@ const ApprovedScreen = () => {
       <Modal visible={!!selectedIdea} animationType="slide">
         <View style={styles.fullModal}>
 
-          {/* Confetti Effect */}
+
           {showClosedPopup && <ConfettiEffect />}
 
-          {/* Closed Popup Message */}
+
           {showClosedPopup && (
             <View style={styles.closedPopupContainer}>
               <View style={styles.closedPopup}>
@@ -822,22 +834,22 @@ const ApprovedScreen = () => {
                         {ideaDetail.ideaStatus || ideaDetail.status || "N/A"}
                       </Text>
                     </View>
-                    
+
                     <View style={styles.rowDetailVertical}>
                       <Text style={styles.labelDetailVertical}>Idea Description:</Text>
                       <Text style={styles.valueDetailVertical}>{ideaDetail.ideaDescription || ideaDetail.description || "N/A"}</Text>
                     </View>
-                    
+
                     <View style={styles.rowDetailVertical}>
                       <Text style={styles.labelDetailVertical}>Proposed Solution:</Text>
                       <Text style={styles.valueDetailVertical}>{ideaDetail.proposedSolution || "N/A"}</Text>
                     </View>
-                    
+
                     <View style={styles.rowDetailVertical}>
                       <Text style={styles.labelDetailVertical}>Process Improvement/Cost Benefit:</Text>
                       <Text style={styles.valueDetailVertical}>{ideaDetail.tentativeBenefit || "N/A"}</Text>
                     </View>
-                    
+
                     <View style={styles.rowDetailWithBorder}>
                       <Text style={styles.labelDetail}>Team Members:</Text>
                       <Text style={styles.valueDetail}>{ideaDetail.teamMembers || "N/A"}</Text>
@@ -880,21 +892,21 @@ const ApprovedScreen = () => {
                             {ideaDetail.implementationCycle?.status || "N/A"}
                           </Text>
                         </View>
-                        
+
                         <View style={styles.rowDetailVertical}>
                           <Text style={styles.labelDetailVertical}>Implementation Details:</Text>
                           <Text style={styles.valueDetailVertical}>
                             {ideaDetail.implementationCycle?.implementation || ideaDetail.implementationDetail || ideaDetail.implementation || "Not provided"}
                           </Text>
                         </View>
-                        
+
                         <View style={styles.rowDetailVertical}>
                           <Text style={styles.labelDetailVertical}>Outcome/Benefits:</Text>
                           <Text style={styles.valueDetailVertical}>
                             {ideaDetail.implementationCycle?.outcome || ideaDetail.implementationOutcome || ideaDetail.outcome || "Not provided"}
                           </Text>
                         </View>
-                        
+
                         {(ideaDetail.implementationCycle?.startDate || ideaDetail.implementationDate) && (
                           <View style={styles.rowDetailWithBorder}>
                             <Text style={styles.labelDetail}>Completed On:</Text>
@@ -958,7 +970,9 @@ const ApprovedScreen = () => {
                     return remarks.map((remark, index) => (
                       <RemarksCard
                         key={index}
-                        title={remark.approverName || remark.title || "Unknown"}
+                        //title={remark.approvalstage || remark.title || "Unknown"}
+                        title={getStageDisplayName(remark.approvalstage) || remark.title || "Unknown"}
+
                         comment={remark.comments || remark.comment || "No comment"}
                         date={remark.approvalDate || remark.date ? formatDateTime(remark.approvalDate || remark.date) : ""}
                       />

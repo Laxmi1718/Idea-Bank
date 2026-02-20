@@ -209,6 +209,21 @@ const parseRemarks = (remarkData) => {
   return [];
 };
 
+
+const getStageDisplayName = (stage) => {
+  if (!stage) return "";
+
+  const s = stage.toLowerCase().trim();
+
+  if (s.includes("manager"))
+    return "Reporting Manager";
+
+  if (s.includes("beteam"))
+    return "BE Team";
+
+  return stage;
+};
+
 export default function MyTeamIdeasScreen() {
   const navigation = useNavigation();
   const [ideas, setIdeas] = useState([]);
@@ -1034,22 +1049,22 @@ export default function MyTeamIdeasScreen() {
                         {ideaDetail.ideaStatus || ideaDetail.status || "N/A"}
                       </Text>
                     </View>
-                    
+
                     <View style={styles.rowDetailVertical}>
                       <Text style={styles.labelDetailVertical}>Idea Description:</Text>
                       <Text style={styles.valueDetailVertical}>{ideaDetail.ideaDescription || ideaDetail.description || "N/A"}</Text>
                     </View>
-                    
+
                     <View style={styles.rowDetailVertical}>
                       <Text style={styles.labelDetailVertical}>Proposed Solution:</Text>
                       <Text style={styles.valueDetailVertical}>{ideaDetail.proposedSolution || "N/A"}</Text>
                     </View>
-                    
+
                     <View style={styles.rowDetailVertical}>
                       <Text style={styles.labelDetailVertical}>Process Improvement/Cost Benefit:</Text>
                       <Text style={styles.valueDetailVertical}>{ideaDetail.tentativeBenefit || "N/A"}</Text>
                     </View>
-                    
+
                     <View style={styles.rowDetailWithBorder}>
                       <Text style={styles.labelDetail}>Team Members:</Text>
                       <Text style={styles.valueDetail}>{ideaDetail.teamMembers || "N/A"}</Text>
@@ -1104,7 +1119,7 @@ export default function MyTeamIdeasScreen() {
                             {ideaDetail.implementationCycle?.status || "N/A"}
                           </Text>
                         </View>
-                        
+
                         <View style={styles.rowDetailVertical}>
                           <Text style={styles.labelDetailVertical}>Implementation Details:</Text>
                           <Text style={styles.valueDetailVertical}>
@@ -1114,7 +1129,7 @@ export default function MyTeamIdeasScreen() {
                               "Not provided"}
                           </Text>
                         </View>
-                        
+
                         <View style={styles.rowDetailVertical}>
                           <Text style={styles.labelDetailVertical}>Outcome/Benefits:</Text>
                           <Text style={styles.valueDetailVertical}>
@@ -1124,7 +1139,7 @@ export default function MyTeamIdeasScreen() {
                               "Not provided"}
                           </Text>
                         </View>
-                        
+
                         {(ideaDetail.implementationCycle?.startDate || ideaDetail.implementationDate) && (
                           <View style={styles.rowDetailWithBorder}>
                             <Text style={styles.labelDetail}>Completed On:</Text>
@@ -1247,7 +1262,8 @@ export default function MyTeamIdeasScreen() {
                     return remarks.map((remark, index) => (
                       <RemarksCard
                         key={index}
-                        title={remark.approverName || remark.title || "Unknown"}
+                        //title={remark.approvalstage || remark.title || "Unknown"}
+                        title={getStageDisplayName(remark.approvalstage) || remark.title || "Unknown"}
                         comment={remark.comments || remark.comment || "No comment"}
                         date={remark.approvalDate || remark.date ? formatDateTime(remark.approvalDate || remark.date) : ""}
                       />
