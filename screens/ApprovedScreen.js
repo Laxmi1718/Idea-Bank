@@ -611,7 +611,8 @@ const ApprovedScreen = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    //<SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['left', 'right', 'bottom']}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Approved Ideas</Text>
         <TouchableOpacity style={styles.filterButton} onPress={() => setShowFilters(!showFilters)}>
