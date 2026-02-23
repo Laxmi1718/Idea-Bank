@@ -42,3 +42,7 @@ android/app/release-key.keystore
 
 # Gradle secrets
 android/gradle.properties
+# Signing Secrets
+android/key.properties
+android/app/*.jks
+*.jks
