@@ -8,8 +8,12 @@ import {
   Alert,
   Linking,
   BackHandler,
+  Platform,
+  Image as RNImage,
 } from "react-native";
 import { Image } from 'expo-image';
+import * as FileSystem from "expo-file-system";
+import * as Sharing from "expo-sharing";
 import {
   createDrawerNavigator,
   DrawerContentScrollView,
@@ -36,6 +40,7 @@ import ApprovedScreen from "./ApprovedScreen";
 import RejectedScreen from "./RejectedScreen";
 import PendingScreen from "./PendingScreen";
 import HoldScreen from "./HoldScreen";
+import HelpScreen from "./HelpScreen";
 import EditIdeaScreen from "./EditIdeaScreen";
 import ManagerEditIdeaScreen from "./ManagerEditIdeaScreen";
 import ImplementationDetailsScreen from "../src/context/ImplementationDetailsScreen";
@@ -126,6 +131,55 @@ function CustomDrawerContent(props) {
       if (error.response) {
         console.error("Error fetching counts:", error.response.data);
       }
+    }
+  };
+
+  const openUserManual = async () => {
+    const pdfModule = require("../assets/manuals/IdeaBank_User_Manual_Application_Web.pdf");
+
+    try {
+      const resolved = RNImage.resolveAssetSource(pdfModule);
+      const uri = typeof pdfModule === "string" ? pdfModule : resolved?.uri;
+
+      if (!uri) {
+        Alert.alert("Error", "PDF asset not found");
+        return;
+      }
+
+      if (Platform.OS === "web") {
+        if (typeof window !== "undefined" && typeof window.open === "function") {
+          window.open(uri, "_blank");
+          return;
+        }
+
+        await Linking.openURL(uri);
+        return;
+      }
+
+      let openUri = uri;
+      if (Platform.OS === "android" && openUri.startsWith("file://")) {
+        openUri = await FileSystem.getContentUriAsync(openUri);
+      }
+
+      try {
+        await Linking.openURL(openUri);
+        return;
+      } catch (e) {
+        // Fall through to sharing-based fallback.
+      }
+
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(uri, {
+          mimeType: "application/pdf",
+          dialogTitle: "User Manual",
+        });
+        return;
+      }
+
+      Alert.alert("Error", "Cannot open the PDF");
+    } catch (error) {
+      console.error("Failed to open PDF:", error);
+      Alert.alert("Error", "Failed to open the PDF");
     }
   };
 
@@ -324,11 +378,7 @@ function CustomDrawerContent(props) {
       {/* Help */}
       <TouchableOpacity
         style={styles.drawerItem}
-        onPress={() =>
-          Linking.openURL(
-            "https://ideabank.abisaio.com/manuals/User_Manuals.pdf"
-          )
-        }
+        onPress={openUserManual}
       >
         <FontAwesome5
           name="question-circle"
@@ -463,6 +513,7 @@ function DrawerScreens() {
       <Drawer.Screen name="Rejected Ideas" component={RejectedScreen} />
       <Drawer.Screen name="Pending Ideas" component={PendingScreen} />
       <Drawer.Screen name="Hold Ideas" component={HoldScreen} />
+      <Drawer.Screen name="Help" component={HelpScreen} />
     </Drawer.Navigator>
   );
 }

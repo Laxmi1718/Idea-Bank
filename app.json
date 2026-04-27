@@ -2,14 +2,13 @@
   "expo": {
     "name": "IdeaBank",
     "slug": "login_app",
-
+    "version": "1.0.1",
     "icon": "./assets/ico_n.png",
     "splash": {
       "image": "./assets/ideabank_logo.png",
       "resizeMode": "contain",
       "backgroundColor": "#E0F7FA"
     },
-
     "plugins": [
       [
         "expo-splash-screen",
@@ -21,25 +20,26 @@
       ],
       "expo-font"
     ],
-
     "extra": {
       "eas": {
         "projectId": "056d47d2-3909-4447-b504-44ee13a06d7f"
       }
     },
-
     "ios": {
       "supportsTablet": true,
       "splash": {
         "image": "./assets/ideabank_logo.png",
         "resizeMode": "contain",
         "backgroundColor": "#E0F7FA"
+      },
+      "bundleIdentifier": "abis.ideabank",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
-
     "android": {
       "package": "abis.ideabank",
-      "versionCode": 1,
+      "versionCode": 2,
       "splash": {
         "image": "./assets/ideabank_logo.png",
         "resizeMode": "contain",
