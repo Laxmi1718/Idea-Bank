@@ -46,3 +46,15 @@ android/gradle.properties
 android/key.properties
 android/app/*.jks
 *.jks
+
+# cache / temp
+.cache/
+.tmp/
+temp/
+tmp/
+
+# system generated
+.update-notifier*
+*.log
+
+.npm-cache/
