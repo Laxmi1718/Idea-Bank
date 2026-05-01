@@ -586,7 +586,7 @@ export default function MainApp() {
         component={ManagerEditIdeaScreen}
         options={({ navigation }) => ({
           headerShown: true,
-          title: "Edit Idea (Manager)",
+          title: "Edit Idea",
           headerStyle: { backgroundColor: "#0f4c5c" },
           headerTintColor: "#fff",
           headerTitleStyle: { fontWeight: "bold" },

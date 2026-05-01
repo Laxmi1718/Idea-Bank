@@ -769,43 +769,7 @@ export default function ManagerEditIdeaScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: '#F5F8FF' }}>
       <ScrollView contentContainerStyle={styles.container}>
-
-        <View style={styles.tabContainer}>
-          <TouchableOpacity
-            activeOpacity={0.7}
-            style={[styles.tabButton, activeTab === 'idea' && styles.tabActive]}
-            onPress={() => handleTabSwitch('idea')}
-          >
-            <Text style={[styles.tabText, activeTab === 'idea' && styles.tabTextActive]}>Idea Form</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            activeOpacity={0.7}
-            style={[styles.tabButton, activeTab === 'employee' && styles.tabActive]}
-            onPress={() => handleTabSwitch('employee')}
-          >
-            <Text style={[styles.tabText, activeTab === 'employee' && styles.tabTextActive]}>Employee Details</Text>
-          </TouchableOpacity>
-        </View>
-
-        {activeTab === 'employee' ? (
-          <View style={styles.card}>
-            {userDetails ? (
-              <>
-                <FieldRow label="Employee No:" value={userDetails.employeeNo} />
-                <FieldRow label="Name:" value={userDetails.name} />
-                <FieldRow label="Email:" value={userDetails.email} />
-                <FieldRow label="Department:" value={userDetails.department} />
-                <FieldRow label="Sub Department:" value={userDetails.subDepartment} />
-                <FieldRow label="Location:" value={userDetails.location} />
-                <FieldRow label="Manager:" value={userDetails.reportingManagerName} />
-                <FieldRow label="Manager Email:" value={userDetails.reportingManagerEmail} />
-              </>
-            ) : (
-              <Text style={styles.loadingText}>Loading employee details...</Text>
-            )}
-          </View>
-        ) : (
-          <View style={styles.card}>
+        <View style={styles.card}>
             <InputField
               label="Idea/Opportunity Description"
               required
@@ -1141,8 +1105,7 @@ export default function ManagerEditIdeaScreen() {
               <Ionicons name="checkmark-circle" size={20} color="#fff" />
               <Text style={styles.submitText}>Update Idea</Text>
             </TouchableOpacity>
-          </View>
-        )}
+        </View>
       </ScrollView>
 
       {isSubmitting && (

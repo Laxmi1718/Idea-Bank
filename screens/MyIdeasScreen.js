@@ -175,6 +175,32 @@ const isImplementationPhase = (status) => {
     || s.includes("rm approval pending");
 };
 
+// Implementation should be editable only until RM (Manager) approval is done.
+// If the record has moved to BE Team stage (or any BE Team status), do not show "Edit Implementation".
+const canEditImplementationUntilRmApproval = (ideaDetail) => {
+  if (!ideaDetail) return false;
+
+  const status = String(ideaDetail.ideaStatus || ideaDetail.status || "").toLowerCase().trim();
+  const currentStageRaw = String(ideaDetail.currentApprovalStage || ideaDetail.approvalStage || "").toLowerCase().trim();
+  const currentStage = currentStageRaw.replace(/\s+/g, "");
+
+  // Once it reaches BE Team, RM has already approved -> lock editing.
+  if (currentStage.includes("beteam")) return false;
+  if (status.includes("be team") || status.includes("by be team") || status.includes("beteam")) return false;
+
+  // RM/Manager approved -> lock editing.
+  if ((status.includes("rm") || status.includes("manager")) && status.includes("approved")) return false;
+
+  // Editable while pending/held/rejected at RM stage.
+  if (currentStage.includes("manager")) return true;
+  if (status.includes("rm approval pending")) return true;
+  if (status.includes("implementation submitted")) return true;
+  if (status.includes("implementation hold by manager")) return true;
+  if (status.includes("implementation rejected by manager")) return true;
+
+  return false;
+};
+
 const parseRemarks = (remarkData) => {
   if (!remarkData) return [];
   if (Array.isArray(remarkData)) return remarkData;
@@ -356,6 +382,9 @@ function IdeasList({ ideas, editIdea, deleteIdea, refreshIdeas }) {
     const hasImplementation = idea.implementationCycle && Object.keys(idea.implementationCycle).length > 0;
     if (isImplementationPhase(idea.ideaStatus)) {
       if (hasImplementation) {
+        if (!canEditImplementationUntilRmApproval(idea)) {
+          return;
+        }
         setIsEditingImplementation(true);
         setShowImplementationForm(true);
       } else {
@@ -874,18 +903,27 @@ function IdeasList({ ideas, editIdea, deleteIdea, refreshIdeas }) {
                     ideaDetail.implementationCycle &&
                     Object.keys(ideaDetail.implementationCycle).length > 0;
 
+                  const canEditImplementation =
+                    inImplementation &&
+                    hasImplementation &&
+                    canEditImplementationUntilRmApproval(ideaDetail);
+
+                  const canSubmitImplementation = inImplementation && !hasImplementation;
+
                   const getButtonText = () => {
-                    if (inImplementation && hasImplementation) {
+                    if (canEditImplementation) {
                       return 'Edit Implementation';
-                    } else if (inImplementation) {
+                    } else if (canSubmitImplementation) {
                       return 'Submit Implementation';
                     }
                     return 'Edit';
                   };
 
-                  return (canEdit || canDelete || inImplementation) && (
+                  const showEditAction = canEdit || canSubmitImplementation || canEditImplementation;
+
+                  return (showEditAction || canDelete) && (
                     <View style={styles.buttonRow}>
-                      {(canEdit || inImplementation) && (
+                      {showEditAction && (
                         <TouchableOpacity
                           style={[styles.button, styles.editButton]}
                           onPress={() => handleEdit(ideaDetail)}

@@ -596,47 +596,10 @@ export default function EditIdeaScreen() {
     setImageScale(prev => Math.max(prev - 0.5, 0.5));
   }, []);
 
-  const handleTabSwitch = useCallback((tab) => setActiveTab(tab), []);
-
   return (
     <View style={{ flex: 1, backgroundColor: '#F5F8FF' }}>
       <ScrollView contentContainerStyle={styles.container}>
-        <View style={styles.tabContainer}>
-          <TouchableOpacity
-            activeOpacity={0.7}
-            style={[styles.tabButton, activeTab === 'idea' && styles.tabActive]}
-            onPress={() => handleTabSwitch('idea')}
-          >
-            <Text style={[styles.tabText, activeTab === 'idea' && styles.tabTextActive]}>Idea Form</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            activeOpacity={0.7}
-            style={[styles.tabButton, activeTab === 'employee' && styles.tabActive]}
-            onPress={() => handleTabSwitch('employee')}
-          >
-            <Text style={[styles.tabText, activeTab === 'employee' && styles.tabTextActive]}>Employee Details</Text>
-          </TouchableOpacity>
-        </View>
-
-        {activeTab === 'employee' ? (
-          <View style={styles.card}>
-            {userDetails ? (
-              <>
-                <FieldRow label="Idea Owner Employee No:" value={userDetails.employeeNo} />
-                <FieldRow label="Owner Name:" value={userDetails.name} />
-                <FieldRow label="Owner Email:" value={userDetails.email} />
-                <FieldRow label="Owner Department:" value={userDetails.department} />
-                <FieldRow label="Owner Sub Department:" value={userDetails.subDepartment} />
-                <FieldRow label="Owner Location:" value={userDetails.location} />
-                <FieldRow label="Reporting Manager Name:" value={userDetails.reportingManagerName} />
-                <FieldRow label="Reporting Manager Email:" value={userDetails.reportingManagerEmail} />
-              </>
-            ) : (
-              <Text style={styles.loadingText}>Loading employee details...</Text>
-            )}
-          </View>
-        ) : (
-          <View style={styles.card}>
+        <View style={styles.card}>
             <InputField
               label="Idea/Opportunity Description"
               required
@@ -983,7 +946,6 @@ export default function EditIdeaScreen() {
               </TouchableOpacity>
             </View>
           </View>
-        )}
       </ScrollView>
 
       {isSubmitting && (
